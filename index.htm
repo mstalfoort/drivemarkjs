@@ -1,0 +1,71 @@
+﻿<!doctype html>
+<html lang="en" ng-app>
+<head>
+    <title>DriveMark</title>
+
+    <meta http-equiv="X-UA-Compatible" content="IE=9" >
+    <meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	
+	<!-- Mobile Specific Metas
+	================================================== -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <link rel="stylesheet" href="includes/css/app.css">
+    <link rel="stylesheet" href="includes/css/bootstrap.min.css">
+
+    <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.3.min.js"></script>
+    <script src="includes/js/bootstrap.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js"></script>
+    <script src="app/indexCtrl.js"></script>
+
+</head>
+<body ng-controller="UrlListCtrl">
+    <div class="container">
+        <h1>>.<</h1>
+
+        <div class="row">
+            <div class="well well-small span12">
+                <form>
+                    <fieldset>
+                        <input type="text" class="span12" value="" placeholder="URL" />
+                        <br />
+                        <input type="text" class="span12" value="" placeholder="Labels" />
+                        <br />
+                        <button class="btn pull-right" type="submit">Ajouter</button>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+
+        <div class="row">
+            <table class="table table-striped span12">
+                <thead>
+                    <th></th>
+                    <th>Marks</th>
+                    <th></th>
+                    <th>
+                        <input type="text" class="span2" value="" placeholder="Filter" ng-model="query" />
+                    </th>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="mark in marks | filter:query">
+                        <td contentEditable="true">{{mark.name}}</td>
+                        <td><a href="{{mark.url}}" target="_blank">{{mark.url}}</a></td>
+                        <td>
+                            <button class="btn btn-mini" type="button"><i class="icon-edit"></i></button>
+                            <button class="btn btn-mini btn-danger" type="button"><i class="icon-remove"></i></button>
+                        </td>
+                        <td class="labels">
+                            <span class="badge badge-info" ng-repeat="label in mark.labels">{{label}}</span>
+                        </td>
+                    </tr>  
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+
+</body>
+</html>
