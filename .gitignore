@@ -16,6 +16,11 @@ local.properties
 .settings/
 .loadpath
 
+# Visual Studio
+*.sln
+web.config
+*.mswwsettings
+
 # External tool builders
 .externalToolBuilders/
 
