@@ -17,52 +17,205 @@
 
     <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.3.min.js"></script>
     <script src="includes/js/bootstrap.min.js"></script>
-    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js"></script>
-    <script src="app/indexCtrl.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js"></script>    
+    <script type="text/javascript">
+      var CLIENT_ID = '58432306085.apps.googleusercontent.com';
+      var SCOPES = 'https://www.googleapis.com/auth/drive';
 
+      /**
+       * Called when the client library is loaded to start the auth flow.
+       */
+      function handleDriveClientLoad() {
+        window.setTimeout(checkAuth, 1);
+      }
+
+      /**
+       * Check if the current user has authorized the application.
+       */
+      function checkAuth() {
+        gapi.auth.authorize(
+            {'client_id': CLIENT_ID, 
+            'scope': SCOPES, 
+            'immediate': true},
+            handleAuthResult);
+      }
+
+      /**
+       * Called when authorization server replies.
+       *
+       * @param {Object} authResult Authorization result.
+       */
+      function handleAuthResult(authResult) {
+
+        //var authButton = document.getElementById('authorizeButton');
+        //var filePicker = document.getElementById('filePicker');
+        $("#gdConnected").attr("class", "icon-question-sign");
+        $("#gdUserName").text("-");
+        $("#gdActionConnect").text("Connect..");
+        $("#gdActionFolderChange").hide();
+        $("#gdFolder").text("-");
+
+        if (authResult && !authResult.error) {
+          // Access token has been successfully retrieved, requests can be sent to the API.
+          
+          console.log(authResult);
+
+          var request = gapi.client.drive.about.get();
+          request.execute(function(resp) {
+            console.log('Current user name: ' + resp.name);
+            console.log('Root folder ID: ' + resp.rootFolderId);
+            console.log('Total quota (bytes): ' + resp.quotaBytesTotal);
+            console.log('Used quota (bytes): ' + resp.quotaBytesUsed);
+          });
+
+        } else {
+          // No access token could be retrieved, show the button to start the authorization flow.
+          
+          $("#gdActionConnect").click(function() {
+              gapi.auth.authorize(
+                  {'client_id': CLIENT_ID, 'scope': SCOPES, 'immediate': false},
+                  handleAuthResult);
+          });
+        }
+      }
+
+      /**
+       * Start the file upload.
+       *
+       * @param {Object} evt Arguments from the file selector.
+       */
+      function uploadFile(evt) {
+        gapi.client.load('drive', 'v2', function() {
+          var file = evt.target.files[0];
+          insertFile(file);
+        });
+      }
+
+      /**
+       * Insert new file.
+       *
+       * @param {File} fileData File object to read data from.
+       * @param {Function} callback Function to call when the request is complete.
+       */
+      function insertFile(fileData, callback) {
+        const boundary = '-------314159265358979323846';
+        const delimiter = "\r\n--" + boundary + "\r\n";
+        const close_delim = "\r\n--" + boundary + "--";
+
+        var reader = new FileReader();
+        reader.readAsBinaryString(fileData);
+        reader.onload = function(e) {
+          var contentType = fileData.type || 'application/octet-stream';
+          var metadata = {
+            'title': fileData.name,
+            'mimeType': contentType
+          };
+
+          var base64Data = btoa(reader.result);
+          var multipartRequestBody =
+              delimiter +
+              'Content-Type: application/json\r\n\r\n' +
+              JSON.stringify(metadata) +
+              delimiter +
+              'Content-Type: ' + contentType + '\r\n' +
+              'Content-Transfer-Encoding: base64\r\n' +
+              '\r\n' +
+              base64Data +
+              close_delim;
+
+          var request = gapi.client.request({
+              'path': '/upload/drive/v2/files',
+              'method': 'POST',
+              'params': {'uploadType': 'multipart'},
+              'headers': {
+                'Content-Type': 'multipart/mixed; boundary="' + boundary + '"'
+              },
+              'body': multipartRequestBody});
+          if (!callback) {
+            callback = function(file) {
+              console.log(file)
+            };
+          }
+          request.execute(callback);
+        }
+      }
+    </script>
+    <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=handleDriveClientLoad"></script>
+    <script src="app/controllers.js"></script>
 </head>
 <body ng-controller="UrlListCtrl">
+    <div class="navbar">
+        <div class="navbar-inner">
+            <a class="brand">DriveMark</a>
+            <ul class="nav pull-right">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-ok-sign" id="gdConnected"></i> Google account <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li class="nav-header"><i class="icon-user"></i> <span id="gdUserName">David Geretti</span></li>
+                        <li><a href="#" id="gdActionConnect">Disconnect</a></li>
+                        <li class="divider"></li>
+                        <li class="nav-header"><i class="icon-folder-open"></i> <span id="gdFolder">WorldTour 2016</span></li>
+                        <li><a href="#" id="gdActionFolderChange">Change..</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
     <div class="container">
-        <h1>>.<</h1>
 
         <div class="row">
-            <div class="well well-small span12">
-                <form>
-                    <fieldset>
-                        <input type="text" class="span12" value="" placeholder="URL" />
-                        <br />
-                        <input type="text" class="span12" value="" placeholder="Labels" />
-                        <br />
-                        <button class="btn pull-right" type="submit">Ajouter</button>
-                    </fieldset>
+            <div class="span8 add-mark">
+                <form name="markerForm" ng-submit="save(markerForm, newMark)">
+                    <div class="input-prepend">
+                        <span class="add-on"><i class="icon-bookmark"></i></span>    
+                        <input name="url" id="newMark" ng-model="newMark.url" type="url" value="" class="span6" placeholder="Add new bookmark" required />
+                    </div>
+                    <div class="input-prepend">
+                        <span class="add-on"><i class="icon-tags"></i></span>
+                        <input name="labels" id="newLabels" ng-model="newMark.rawLabels" type="text" value="" class="span6" placeholder="Labels" /><br />
+                    </div>
+                        <button type="submit" class="btn btn-primary span1 offset5">Add</button>
                 </form>
+            </div>
+            <div class="span4">
+                <p class="text-info" ng-show="newMark.labels.length > 0">Label for the new bookmark</p>
+                <span class="label label-info" ng-repeat="label in newMark.labels">{{label}}</span>
+            </div>
+            <div class="span12 page-separator">
+                <i class="icon-asterisk"></i>
+                <i class="icon-asterisk"></i>
+                <i class="icon-asterisk"></i>
             </div>
         </div>
 
         <div class="row">
-            <table class="table table-striped span12">
-                <thead>
-                    <th></th>
-                    <th>Marks</th>
-                    <th></th>
-                    <th>
-                        <input type="text" class="span2" value="" placeholder="Filter" ng-model="query" />
-                    </th>
-                </thead>
-                <tbody>
-                    <tr ng-repeat="mark in marks | filter:query">
-                        <td contentEditable="true">{{mark.name}}</td>
-                        <td><a href="{{mark.url}}" target="_blank">{{mark.url}}</a></td>
-                        <td>
-                            <button class="btn btn-mini" type="button"><i class="icon-edit"></i></button>
-                            <button class="btn btn-mini btn-danger" type="button"><i class="icon-remove"></i></button>
-                        </td>
-                        <td class="labels">
-                            <span class="badge badge-info" ng-repeat="label in mark.labels">{{label}}</span>
-                        </td>
-                    </tr>  
-                </tbody>
-            </table>
+            <div class="span12">
+                <ul class="nav nav-tabs">
+                    <li class="active"><a href="">Latest bookmarks</a></li>
+                </ul>
+                <input type="text" class="span3 pull-right" value="" placeholder="Filter" ng-model="query" />
+                <table class="table table-striped">
+                    <tbody>
+                        <tr ng-repeat="mark in marks | filter:query">
+                            <td ng-model="mark.name">{{mark.name}}</td>
+                            <td><a href="{{mark.url}}" target="_blank">{{mark.url}}</a></td>
+                            <td>
+                                <button class="btn btn-mini" type="button" ng-click="save(mark)"><i class="icon-edit"></i></button>
+                                <button class="btn btn-mini btn-danger" type="button"><i class="icon-remove"></i></button>
+                            </td>
+                            <td class="labels">
+                                <span class="label label-info" ng-repeat="label in mark.labels">{{label}}</span>
+                            </td>
+                        </tr>  
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="span12 page-separator">
+                <i class="icon-asterisk"></i>
+                <i class="icon-asterisk"></i>
+                <i class="icon-asterisk"></i>
+            </div>
         </div>
     </div>
     

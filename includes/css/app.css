@@ -1,7 +1,23 @@
 ﻿body {
 }
 
-.labels span
+header 
+{
+    background: url(../img/clouds.jpg) center center;
+    height: 80px;
+    margin-bottom: 10px;
+}
+
+span.label
 {
     margin-right: 5px;
+    cursor: pointer;
 }
+
+.page-separator 
+{
+    text-align: center;
+    padding: 20px 0;
+}
+    .page-separator i { opacity: 0.3; }
+    .page-separator i:nth-child(odd) { opacity: 0.15; }
