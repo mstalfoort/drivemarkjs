@@ -1,0 +1,26 @@
+[
+    { "name": "Google",
+        "url": "http://www.google.com",
+        "labels": ["search"]
+    },
+    { "name": "David Geretti",
+        "url": "http://davidgeretti.ch",
+        "labels": ["awesome", "bookmark"]
+    },
+    { "name": "Bootsnall",
+        "url": "http://www.bootsnall.com/rtw/planning",
+        "labels": ["travel", "tips", "worldtour"]
+    },
+    { "name": "Alexmaccaw",
+        "url": "http://alexmaccaw.com/posts/how_to_travel_around_the_world",
+        "labels": ["travel", "tips", "worldtour"]
+    },
+    { "name": "Oneworld",
+        "url": "http://www.oneworld.com/",
+        "labels": ["travel", "flight", "worldtour"]
+    },
+	{ "name": "Hotel Kakslauttanen",
+		"url": "http://www.kakslauttanen.fi/fr/",
+		"labels": ["travel", "finland", "hotel"]
+	}
+]

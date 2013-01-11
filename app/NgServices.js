@@ -3,13 +3,15 @@
 var app = angular.module("drivemark", ["ngCookies"]);
 
 
-app.factory("googleDrive", function ($rootScope) {
+app.factory("googleDrive", function ($rootScope, $http) {
+
+    delete $http.defaults.headers.common["X-Requested-With"];   // deletes the X-Requested-With header (for XHR requests): incompatible with Google API
 
     var googleDrive = {};
 
     googleDrive.CLIENT_ID = '852549593040.apps.googleusercontent.com';
     googleDrive.SCOPES = 'https://www.googleapis.com/auth/drive';
-    googleDrive.bookmarkFileName = "DriveMark_bookmarks.txt";
+    googleDrive.bookmarkFileName = "DriveMark_bookmarks.json";
 
     // stores $scope from UserInfoCtrl
     googleDrive.data = null;
@@ -54,7 +56,7 @@ app.factory("googleDrive", function ($rootScope) {
                             "id": scope.userInfo.rootFolderId,
                             "title": ""
                         };
-                        scope.$digest();
+                        //scope.$digest();
 
                         if (!scope.rootFolder.title) {
                             var request = gapi.client.drive.files.get({
@@ -62,7 +64,7 @@ app.factory("googleDrive", function ($rootScope) {
                             });
                             request.execute(function (resp) {
                                 scope.rootFolder.title = resp.title;
-                                scope.$digest();
+                                //scope.$digest();
                                 $rootScope.$broadcast("GoogleDriveLoaded");
 
                             });
@@ -88,57 +90,82 @@ app.factory("googleDrive", function ($rootScope) {
 
     // respond to connect menu
     googleDrive.connect = function () {
-
+        var self = this;
         gapi.auth.authorize(
                     { 'client_id': self.CLIENT_ID, 'scope': self.SCOPES, 'immediate': false },
                     function (authResult) { self.handleAuthResult(authResult); });
     };
 
-    googleDrive.fileExists = function (folder, fileName) {
-        return false;
+
+
+    googleDrive.getFile = function (folder, fileName, callbackWithMeta, errorCallback) {
+
+        var request = gapi.client.drive.files.list({
+            "maxResults": 1,
+            "q": "title = '" + fileName + "' and '" + folder.id + "' in parents"
+        });
+
+        request.execute(function (resp) {
+            if (resp.items && resp.items.length > 0) {
+                callbackWithMeta(resp.items[0]);
+            } else {
+                errorCallback();
+            }
+        });
     };
 
-    googleDrive.createFile = function (folder, fileName, content) {
-
+    googleDrive.createFile = function (folder, fileName, content, createdCallback) {
+        alert("Not yet implemented");
+        createdCallback();
     };
 
-    googleDrive.readBookmarks = function () {
-        console.log(this.data);
+    googleDrive.readBookmarks = function (fileRsc, readCallback) {
+
+        // open file with download url from fileMeta (fileRsc)
+        if (fileRsc.downloadUrl) {
+
+            var accessToken = gapi.auth.getToken().access_token;
+
+            $http({ method: "GET", url: fileRsc.downloadUrl, headers: { "Authorization": "Bearer " + accessToken} })
+                .success(function (data) { readCallback(data); })
+                .error(function (data) { alert("Error: cannot read file content"); });
+
+        } else {
+            console.log(fileRsc);
+            alert("Error reading file: '" + fileRsc.title + "'. Format seems to be incorrect");
+        }
+    }
+
+    googleDrive.loadBookmarks = function (loadedCallback) {
+        var self = this;
         var folder = this.data.rootFolder;
 
-        // detect if file is present
-        if (!this.fileExists(folder, this.bookmarkFileName)
-            && confirm("Bookmark file is not present. Create it in '" + folder.title + "' ?")) {    // if not present ask for creation
+        this.getFile(folder, this.bookmarkFileName,
+            function (fileMeta) {    // exists, here is the meta (with the download link)!
+                self.readBookmarks(fileMeta, function (list) {
+                    loadedCallback(list);
+                });
+            },
+            function () {   // doesn't exist
 
-            this.createFile(folder, this.bookmarkFileName, [
-                { "name": "Google",
-                    "url": "http://www.google.com",
-                    "labels": ["search"]
-                },
-                { "name": "David Geretti",
-                    "url": "http://davidgeretti.ch",
-                    "labels": ["awesome", "bookmark"]
+                if (confirm("Bookmark file is not present. Create it in '" + folder.title + "' ?")) {    // if not present ask for creation
+                    self.createFile(folder, self.bookmarkFileName, [
+                        { "name": "Google",
+                            "url": "http://www.google.com",
+                            "labels": ["search"]
+                        },
+                        { "name": "David Geretti",
+                            "url": "http://davidgeretti.ch",
+                            "labels": ["awesome", "bookmark"]
+                        }
+                    ],
+                    function () {
+                        self.readBookmarks(function (list) {
+                            loadedCallback(self.readBookmarks());
+                        });
+                    });
                 }
-            ]);
-        }
-
-        // load marks
-
-
-        return [
-            { "name": "Bootsnall",
-                "url": "http://www.bootsnall.com/rtw/planning",
-                "labels": ["travel", "tips"]
-            },
-            { "name": "Alexmaccaw",
-                "url": "http://alexmaccaw.com/posts/how_to_travel_around_the_world",
-                "labels": ["travel", "tips"]
-            },
-            { "name": "Oneworld",
-                "url": "http://www.oneworld.com/",
-                "labels": ["travel", "flights"]
-            }
-        ];
+            });
     };
 
     return googleDrive;

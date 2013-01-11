@@ -9,9 +9,13 @@ function UrlListCtrl($scope, googleDrive) {
     $scope.marks = []
 
     $scope.$on("GoogleDriveLoaded", function () {
-        $scope.marks = googleDrive.readBookmarks();
+        $scope.marks = googleDrive.loadBookmarks(
+            function (list) {
 
-        $scope.$digest();
+                $scope.marks = list;
+                console.log("test");
+                //$scope.$digest();
+            });
     });
 
     $scope.save = function (form, mark) {
