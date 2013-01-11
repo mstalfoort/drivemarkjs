@@ -1,6 +1,6 @@
 ﻿
 
-function UrlListCtrl($scope) {
+function UrlListCtrl($scope, googleDrive) {
 
     $scope.newMark = resetMarker();
     $scope.hotLabels = [
@@ -55,6 +55,10 @@ function UrlListCtrl($scope) {
 
         $scope.newMark = resetMarker();
     }
+
+
+
+
 
     function resetMarker() {
         return { "url": "", "name": "", "labels": []};
