@@ -15,92 +15,14 @@
     <link rel="stylesheet" href="includes/css/app.css">
     <link rel="stylesheet" href="includes/css/bootstrap.min.css">
 
-    <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.3.min.js"></script>
-    <script src="includes/js/bootstrap.min.js"></script>
-    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js"></script>
-    <script src="http://code.angularjs.org/1.0.3/angular-cookies.min.js"></script>
+    <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.3.min.js"></script>
+    <script type="text/javascript" src="includes/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js"></script>
+    <script type="text/javascript" src="http://code.angularjs.org/1.0.3/angular-cookies.min.js"></script>
+    <script type="text/javascript" src="app/NgServices.js"></script>
+    <script type="text/javascript" src="app/UrlListCtrl.js"></script>
+    <script type="text/javascript" src="app/UserInfoCtrl.js"></script>
     <script type="text/javascript">
-        var app = angular.module("drivemark", ["ngCookies"]);
-
-        app.factory("googleDrive", function () {
-
-            var googleDrive = {};
-
-            googleDrive.CLIENT_ID = '852549593040.apps.googleusercontent.com';
-            googleDrive.SCOPES = 'https://www.googleapis.com/auth/drive';
-
-            googleDrive.data = null;
-
-            googleDrive.checkAuth = function () {
-                var self = this;
-
-                setTimeout(function () {
-                    gapi.auth.authorize(
-                        { 'client_id': self.CLIENT_ID, 'scope': self.SCOPES, 'immediate': true },
-                        function (authResult) { self.handleAuthResult(authResult); });
-                }, 1);
-            };
-
-            googleDrive.connect = function () {
-
-                gapi.auth.authorize(
-                    { 'client_id': self.CLIENT_ID, 'scope': self.SCOPES, 'immediate': false },
-                    function (authResult) { self.handleAuthResult(authResult); });
-            };
-            googleDrive.load = function (scope) {
-                // load library, on callback => checkAuth, on callback => call callback!
-                this.data = scope;
-
-                this.checkAuth();
-            };
-
-            googleDrive.handleAuthResult = function (authResult) {
-                var self = this;
-                var scope = this.data;
-
-                if (authResult && !authResult.error) {
-                    // Access token has been successfully retrieved, requests can be sent to the API.
-                    // load client to retrieve user information
-                    gapi.client.load('drive', 'v2', function () {
-
-                        var request = gapi.client.drive.about.get();
-                        request.execute(function (resp) {
-                            if (!resp.error) {
-
-                                scope.connected = true;
-                                console.log(resp);
-                                scope.userInfo = resp;
-                                scope.$digest();
-
-                                if (!scope.rootFolder) {
-                                    var request = gapi.client.drive.files.get({
-                                        'fileId': scope.userInfo.rootFolderId
-                                    });
-                                    request.execute(function (resp) {
-                                        scope.rootFolder = resp.title;
-                                        scope.$digest();
-
-                                    });
-                                }
-
-                            } else {
-                                alert("Error! unable to retrieve user information");
-                            }
-                        });
-
-                    });
-
-                } else {
-                    // No access token could be retrieved, show the button to start the authorization flow.
-
-                    scope.$apply(function () {
-                        scope.connected = false;
-                    });
-                }
-            };
-
-            return googleDrive;
-        });
 
         function handleDriveClientLoad() {
             angular.element(document).ready(function () {
@@ -110,8 +32,6 @@
 
     </script>
     <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=handleDriveClientLoad"></script>
-    <script src="app/UrlListCtrl.js"></script>
-    <script src="app/UserInfoCtrl.js"></script>
 </head>
 <body>
     <div class="navbar">
@@ -131,7 +51,7 @@
                             Usage: <span>{{Math.round(userInfo.quotaBytesUsed * 10000 / userInfo.quotaBytesTotal) / 100}} %</span></li>
                         <li class="divider"></li>
                         <li class="nav-header"><i class="icon-folder-open"></i> <span>Folder</span></li>
-                        <li ng-show="connected"><a href="#" ng-click="selectDriveFolder()" id="gdActionFolderChange" ng-show="connected">{{rootFolder}}..</a></li>
+                        <li ng-show="connected"><a href="#" ng-click="selectDriveFolder()" id="gdActionFolderChange" ng-show="connected">{{rootFolder.title}}..</a></li>
                     </ul>
                 </li>
             </ul>

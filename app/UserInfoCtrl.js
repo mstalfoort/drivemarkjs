@@ -6,7 +6,7 @@ function UserInfoCtrl($scope, googleDrive, $cookieStore) {
     $scope.SCOPES = 'https://www.googleapis.com/auth/drive';
     $scope.userInfo = {};
     $scope.connected = false;
-    $scope.rootFolder = $cookieStore.get("rootFolder");
+    $scope.rootFolder = { "id": null, "title": null };  //$cookieStore.get("rootFolder");
 
     $scope.Math = window.Math;
 
