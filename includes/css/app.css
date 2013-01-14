@@ -21,3 +21,12 @@ span.label
 }
     .page-separator i { opacity: 0.3; }
     .page-separator i:nth-child(odd) { opacity: 0.15; }
+    
+    
+.loader 
+{
+    line-height: 2em;
+    background: white;
+    border: 1px solid gray;
+    text-align: center;
+}

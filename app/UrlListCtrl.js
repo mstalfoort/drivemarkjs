@@ -1,22 +1,50 @@
 ﻿
 
-function UrlListCtrl($scope, googleDrive) {
+function UrlListCtrl($scope, $rootScope, $timeout, googleDrive) {
 
     $scope.newMark = resetMarker();
     $scope.hotLabels = [
         "travel", "tips", "flights"];
 
+    $scope.successMessage = null;
+
     $scope.marks = []
 
     $scope.$on("GoogleDriveLoaded", function () {
-        $scope.marks = googleDrive.loadBookmarks(
-            function (list) {
-
-                $scope.marks = list;
-                console.log("test");
-                //$scope.$digest();
-            });
+    googleDrive.loadBookmarks(
+        function (list) {
+            $scope.marks = list;
+        });
     });
+
+    $scope.hideAlerts = function() {
+        $scope.successMessage = null;
+    };
+
+    $scope.deleteMark = function (mark) {
+
+        var newMarks = $.grep($scope.marks, function (elem, index) {
+            return elem.url != mark.url;
+        });
+
+        googleDrive.updateLinkFile(
+            newMarks,
+            $rootScope.rootFolder.id,
+            $rootScope.bookmarkFile.id,
+            function () {   /*successCallback:*/
+                $scope.marks = newMarks;
+
+                $scope.successMessage = {
+                    "label": "Cool!",
+                    "text": "It worked!"
+                };
+                $scope.$digest();
+                $timeout($scope.hideAlerts, 3000, true);
+            },
+            function () {   /*errorCallback:*/
+                alert("Error deleting links to drive");
+            });
+    };
 
     $scope.save = function (form, mark) {
 
@@ -46,14 +74,38 @@ function UrlListCtrl($scope, googleDrive) {
         }
 
         console.log(mark);
-        $scope.marks.push(mark);
 
-        $scope.newMark = resetMarker();
+
+        if (!$rootScope.bookmarkFile.id || !$rootScope.rootFolder.id) {
+            alert("Error: missing bookmark file or root folder");
+        }
+
+        var marksCopy = angular.copy($scope.marks);
+        marksCopy.push(mark);
+
+        googleDrive.updateLinkFile(
+            marksCopy,
+            $rootScope.rootFolder.id,
+            $rootScope.bookmarkFile.id,
+            /*successCallback:*/ function () {
+                $scope.marks.push(mark);
+                $scope.newMark = resetMarker();
+
+                $scope.successMessage = {
+                    "label": "Cool!",
+                    "text": "It worked!"
+                };
+                $scope.$digest();
+                $timeout($scope.hideAlerts, 3000, true);
+            },
+            /*errorCallback:*/ function () {
+                alert("Error saving link to drive");
+            });
     }
 
 
-
-
+    /*********************/
+    /* UTILITY FUNCTIONS */
 
     function resetMarker() {
         return { "url": "", "name": "", "labels": []};

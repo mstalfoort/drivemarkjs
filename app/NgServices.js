@@ -13,6 +13,14 @@ app.factory("googleDrive", function ($rootScope, $http) {
     googleDrive.SCOPES = 'https://www.googleapis.com/auth/drive';
     googleDrive.bookmarkFileName = "DriveMark_bookmarks.json";
 
+    $rootScope.rootFolder = { "id": null, "title": null };  //$cookieStore.get("rootFolder");
+    $rootScope.bookmarkFile = { "id": null, "title": null };
+
+
+    googleDrive._boundary = '-------314159265358979323846';
+    googleDrive._delimiter = "\r\n--" + googleDrive._boundary + "\r\n";
+    googleDrive._close_delim = "\r\n--" + googleDrive._boundary + "--";
+
     // stores $scope from UserInfoCtrl
     googleDrive.data = null;
 
@@ -52,18 +60,18 @@ app.factory("googleDrive", function ($rootScope, $http) {
 
                         scope.connected = true;
                         scope.userInfo = resp;
-                        scope.rootFolder = {
+                        $rootScope.rootFolder = {
                             "id": scope.userInfo.rootFolderId,
                             "title": ""
                         };
                         //scope.$digest();
 
-                        if (!scope.rootFolder.title) {
+                        if (!$rootScope.rootFolder.title) {
                             var request = gapi.client.drive.files.get({
                                 'fileId': scope.userInfo.rootFolderId
                             });
                             request.execute(function (resp) {
-                                scope.rootFolder.title = resp.title;
+                                $rootScope.rootFolder.title = resp.title;
                                 //scope.$digest();
                                 $rootScope.$broadcast("GoogleDriveLoaded");
 
@@ -119,6 +127,36 @@ app.factory("googleDrive", function ($rootScope, $http) {
         createdCallback();
     };
 
+    googleDrive.updateLinkFile = function (marks, folderId, fileId, successCallback, errorCallback) {
+        //function updateFile(fileId, fileMetadata, fileData, callback) {
+
+        var contentType = "application/json";
+        var metaData = { "mimeType": contentType };
+
+        var multipartRequestBody =
+            this._delimiter + "Content-type: application/json\r\n\r\n" +
+            JSON.stringify(metaData) +
+            this._delimiter + "Content-type: " + contentType + "\r\n\r\n" +
+            JSON.stringify(marks) +
+            this._close_delim;
+
+        var request = gapi.client.request({
+            "path": "/upload/drive/v2/files/" + folderId,
+            "method": "PUT",
+            "params": { "fileId": fileId, "uploadType": "multipart" },
+            "headers": { "Content-type": "application/json" },
+            "body": angular.toJson(marks, true)
+        });
+
+        request.execute(function (resp) {
+            if (!resp.error) {
+                successCallback();
+            } else {
+                errorCallback();
+            }
+        });
+    };
+
     googleDrive.readBookmarks = function (fileRsc, readCallback) {
 
         // open file with download url from fileMeta (fileRsc)
@@ -138,10 +176,11 @@ app.factory("googleDrive", function ($rootScope, $http) {
 
     googleDrive.loadBookmarks = function (loadedCallback) {
         var self = this;
-        var folder = this.data.rootFolder;
+        var folder = $rootScope.rootFolder;
 
         this.getFile(folder, this.bookmarkFileName,
             function (fileMeta) {    // exists, here is the meta (with the download link)!
+                $rootScope.bookmarkFile = fileMeta;
                 self.readBookmarks(fileMeta, function (list) {
                     loadedCallback(list);
                 });

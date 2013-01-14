@@ -43,22 +43,22 @@
                         <i class="icon-ok-sign" ng-show="connected"></i>
                         <i class="icon-question-sign" ng-hide="connected"></i> 
                         Google account <b class="caret"></b></a>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu span4">
                         <li class="nav-header"><i class="icon-user"></i> <span>{{userInfo.name}}</span></li>
                         <li><a href="#" ng-click="disconnect()" ng-show="connected">Disconnect</a></li>
                         <li><a href="#" ng-click="connect()" ng-hide="connected">Connect</a></li>
                         <li ng-show="connected" class="nav-header"><i class="icon-signal"></i> 
                             Usage: <span>{{Math.round(userInfo.quotaBytesUsed * 10000 / userInfo.quotaBytesTotal) / 100}} %</span></li>
                         <li class="divider"></li>
-                        <li class="nav-header"><i class="icon-folder-open"></i> <span>Folder</span></li>
-                        <li ng-show="connected"><a href="#" ng-click="selectDriveFolder()" id="gdActionFolderChange" ng-show="connected">{{rootFolder.title}}..</a></li>
+                        <li class="nav-header"><i class="icon-folder-open"></i> <span>Folder \ File</span>
+                        <li ng-show="connected"><a href="#" ng-click="selectDriveFolder()" ng-show="connected">
+                            {{rootFolder.title}}<span class="muted">&nbsp;\&nbsp;{{bookmarkFile.title}}</span></a></li>
                     </ul>
                 </li>
             </ul>
         </div>
     </div>
     <div class="container" ng-controller="UrlListCtrl">
-
         <div class="row">
             <div class="span8 add-mark">
                 <form name="markerForm" ng-submit="save(markerForm, newMark)">
@@ -86,18 +86,27 @@
 
         <div class="row">
             <div class="span12">
+
                 <ul class="nav nav-tabs">
                     <li class="active"><a href="">Latest bookmarks</a></li>
                 </ul>
-                <input type="text" class="span3 pull-right" value="" placeholder="Filter" ng-model="query" />
+
+                <div class="row">
+                    <div class="alert alert-success span6" ng-show="successMessage">
+                        <button type="button" class="close" ng-click="hideAlerts()">&times;</button>
+                        <strong>{{successMessage.label}}</strong> {{successMessage.text}}
+                    </div>
+                    <input type="text" class="span3 pull-right" value="" placeholder="Filter" ng-model="query" />
+                </div>
+                
                 <table class="table table-striped">
                     <tbody>
                         <tr ng-repeat="mark in marks | filter:query">
                             <td ng-model="mark.name">{{mark.name}}</td>
                             <td><a href="{{mark.url}}" target="_blank">{{mark.url}}</a></td>
                             <td>
-                                <button class="btn btn-mini" type="button" ng-click="save(mark)"><i class="icon-edit"></i></button>
-                                <button class="btn btn-mini btn-danger" type="button"><i class="icon-remove"></i></button>
+                                <button class="btn btn-mini" type="button"><i class="icon-edit"></i></button>
+                                <button class="btn btn-mini btn-danger" type="button" ng-click="deleteMark(mark)"><i class="icon-remove"></i></button>
                             </td>
                             <td class="labels">
                                 <span class="label label-info" ng-repeat="label in mark.labels">{{label}}</span>
