@@ -8,7 +8,7 @@ header
     margin-bottom: 10px;
 }
 
-span.label
+span.label, a.label
 {
     margin-right: 5px;
     cursor: pointer;

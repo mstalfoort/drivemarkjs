@@ -1,6 +1,6 @@
 ﻿
 
-function UrlListCtrl($scope, $rootScope, $timeout, googleDrive) {
+function UrlListCtrl($scope, $rootScope, $timeout, googleDrive, $route, $routeParams) {
 
     $scope.newMark = resetMarker();
     $scope.hotLabels = [
@@ -17,6 +17,19 @@ function UrlListCtrl($scope, $rootScope, $timeout, googleDrive) {
                 $rootScope.loaderOff();
             });
     });
+
+    // Listen for changes to the Route. When the route
+    // changes, let's set the renderAction model value so
+    // that it can render in the Strong element.
+    $scope.$on(
+        "$routeChangeSuccess",
+        function( $currentRoute, $previousRoute ){
+ 
+            // Update the rendering.
+            render();
+ 
+        }
+    );
 
     $scope.hideAlerts = function() {
         $scope.successMessage = null;
@@ -111,6 +124,40 @@ function UrlListCtrl($scope, $rootScope, $timeout, googleDrive) {
             alert("Error saving link to drive");
         });
     }
+
+    // Update the rendering of the page.
+    // source : http://www.bennadel.com/blog/2420-Mapping-AngularJS-Routes-Onto-URL-Parameters-And-Client-Side-Events.htm
+    render = function () {
+
+        // Pull the "action" value out of the
+        // currently selected route.
+        var renderAction = $route.current.action;
+
+        // Also, let's update the render path so that
+        // we can start conditionally rendering parts
+        // of the page.
+        var renderPath = renderAction.split(".");
+
+        // Grab the username out of the params.
+        //
+        // NOTE: This will be undefined for every route
+        // except for the "contact" route; for the sake
+        // of simplicity, I am not exerting any finer
+        // logic around it.
+        var labelname = ($routeParams.labelname || "");
+
+        // Reset the booleans used to set the class
+        // for the navigation.
+        var isHome = (renderPath[0] == "home");
+        var isLabel = (renderPath[0] == "label");
+
+        // Store the values in the model.
+        $scope.renderAction = renderAction;
+        $scope.renderPath = renderPath;
+        $scope.labelname = labelname;
+        $scope.isHome = isHome;
+        $scope.isLabel = isLabel;
+    };
 
 
     /*********************/

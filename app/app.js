@@ -1,8 +1,31 @@
-﻿
+﻿// -------------------------------------------------------//
+// ANGULAR MODULES
+// Angular modules and configurations to load during
+//  bootstrap
+//
+// See http://docs.angularjs.org/guide/module for details
+// -------------------------------------------------------//
 
 var app = angular.module("drivemark", ["ngCookies"]);
 
+// -------------------------------------------------------//
+// CONFIGURATION
+// Routing, ...
+// ------------------------------------------------------ //
+app.config(function ($routeProvider) {
+    $routeProvider
+        .when("/", { action: "home.default" })
+        .when("/label/:labelname",
+        {
+            action: "label.filter"
+        })
+        .otherwise({ redirectTo: "#/" });
+});
 
+// -------------------------------------------------------//
+// SERVICES
+// googleDrive, ...
+// -------------------------------------------------------//
 app.factory("googleDrive", function ($rootScope, $http) {
 
     delete $http.defaults.headers.common["X-Requested-With"];   // deletes the X-Requested-With header (for XHR requests): incompatible with Google API
@@ -209,7 +232,10 @@ app.factory("googleDrive", function ($rootScope, $http) {
     return googleDrive;
 });
 
-
+// -------------------------------------------------------//
+// DIRECTIVES
+// automatic loader, ...
+// -------------------------------------------------------//
 app.directive("dgLoader", function ($rootScope) {
 
     return function (scope, element, attrs) {

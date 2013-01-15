@@ -19,7 +19,7 @@
     <script type="text/javascript" src="includes/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js"></script>
     <script type="text/javascript" src="http://code.angularjs.org/1.0.3/angular-cookies.min.js"></script>
-    <script type="text/javascript" src="app/NgServices.js"></script>
+    <script type="text/javascript" src="app/app.js"></script>
     <script type="text/javascript" src="app/UrlListCtrl.js"></script>
     <script type="text/javascript" src="app/UserInfoCtrl.js"></script>
     <script type="text/javascript">
@@ -43,7 +43,7 @@
                 <a href="#" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
                     <span class="icon-chevron-down"></span>
                 </a>
-                <a class="brand">DriveMark</a>
+                <a class="brand" href="#/">DriveMark</a>
 
                 <div class="collapse nav-collapse">
                     <ul class="nav pull-right navbar-responsive-collapse" ng-controller="UserInfoCtrl" id="userInfoCtrl">
@@ -100,7 +100,8 @@
             <div class="span12">
 
                 <ul class="nav nav-tabs">
-                    <li class="active"><a href="">Latest bookmarks</a></li>
+                    <li ng-class="{active: isHome}"><a href="#/">Latest bookmarks</a></li>
+                    <li ng-class="{active: isLabel}" ng-hide="isHome"><a href="#">{{labelname}}</a></li>
                 </ul>
 
                 <div class="row">
@@ -121,7 +122,7 @@
                                 <button class="btn btn-mini btn-danger" type="button" ng-click="deleteMark(mark)"><i class="icon-remove"></i></button>
                             </td>
                             <td class="labels">
-                                <span class="label label-info" ng-repeat="label in mark.labels">{{label}}</span>
+                                <a href="#/label/{{label}}" class="label label-info" ng-repeat="label in mark.labels">{{label}}</a>
                             </td>
                         </tr>  
                     </tbody>
