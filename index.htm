@@ -34,47 +34,59 @@
     <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=handleDriveClientLoad"></script>
 </head>
 <body>
+
+    <div dg-loader class="loader">loading<br /><img src="includes/img/loader_h.gif" /></div>
+
     <div class="navbar">
         <div class="navbar-inner">
-            <a class="brand">DriveMark</a>
-            <ul class="nav pull-right" ng-controller="UserInfoCtrl" id="userInfoCtrl">
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        <i class="icon-ok-sign" ng-show="connected"></i>
-                        <i class="icon-question-sign" ng-hide="connected"></i> 
-                        Google account <b class="caret"></b></a>
-                    <ul class="dropdown-menu span4">
-                        <li class="nav-header"><i class="icon-user"></i> <span>{{userInfo.name}}</span></li>
-                        <li><a href="#" ng-click="disconnect()" ng-show="connected">Disconnect</a></li>
-                        <li><a href="#" ng-click="connect()" ng-hide="connected">Connect</a></li>
-                        <li ng-show="connected" class="nav-header"><i class="icon-signal"></i> 
-                            Usage: <span>{{Math.round(userInfo.quotaBytesUsed * 10000 / userInfo.quotaBytesTotal) / 100}} %</span></li>
-                        <li class="divider"></li>
-                        <li class="nav-header"><i class="icon-folder-open"></i> <span>Folder \ File</span>
-                        <li ng-show="connected"><a href="#" ng-click="selectDriveFolder()" ng-show="connected">
-                            {{rootFolder.title}}<span class="muted">&nbsp;\&nbsp;{{bookmarkFile.title}}</span></a></li>
-                    </ul>
-                </li>
-            </ul>
+            <div class="container">
+                <a href="#" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                    <span class="icon-chevron-down"></span>
+                </a>
+                <a class="brand">DriveMark</a>
+
+                <div class="collapse nav-collapse">
+                    <ul class="nav pull-right navbar-responsive-collapse" ng-controller="UserInfoCtrl" id="userInfoCtrl">
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                <i class="icon-ok-sign" ng-show="connected"></i>
+                                <i class="icon-question-sign" ng-hide="connected"></i> 
+                                Google account <b class="caret"></b></a>
+                            <ul class="dropdown-menu span6">
+                                <li class="nav-header"><i class="icon-user"></i> <span>{{userInfo.name}}</span></li>
+                                <li><a href="#" ng-click="disconnect()" ng-show="connected">Disconnect</a></li>
+                                <li><a href="#" ng-click="connect()" ng-hide="connected">Connect</a></li>
+                                <li ng-show="connected" class="nav-header"><i class="icon-signal"></i> 
+                                    Usage: <span>{{Math.round(userInfo.quotaBytesUsed * 10000 / userInfo.quotaBytesTotal) / 100}} %</span></li>
+                                <li class="divider"></li>
+                                <li class="nav-header"><i class="icon-folder-open"></i> <span>Folder \ File</span>
+                                <li ng-show="connected"><a href="#" ng-click="selectDriveFolder()" ng-show="connected">
+                                    {{rootFolder.title}}<span class="muted">&nbsp;\&nbsp;{{bookmarkFile.title}}</span></a></li>
+                            </ul>
+                        </li>
+                    </ul></div>
+            </div>
         </div>
     </div>
     <div class="container" ng-controller="UrlListCtrl">
         <div class="row">
-            <div class="span8 add-mark">
+            <div class="span12 add-mark">
                 <form name="markerForm" ng-submit="save(markerForm, newMark)">
                     <div class="input-prepend">
                         <span class="add-on"><i class="icon-bookmark"></i></span>    
-                        <input name="url" id="newMark" ng-model="newMark.url" type="url" value="" class="span6" placeholder="Add new bookmark" required />
+                        <input name="url" id="newMark" ng-model="newMark.url" type="url" value="" class="span12" placeholder="Add new bookmark" required />
                     </div>
                     <div class="input-prepend">
                         <span class="add-on"><i class="icon-tags"></i></span>
-                        <input name="labels" id="newLabels" ng-model="newMark.rawLabels" type="text" value="" class="span6" placeholder="Labels" /><br />
+                        <input name="labels" id="newLabels" ng-model="newMark.rawLabels" type="text" value="" class="span12" placeholder="Labels" /><br />
                     </div>
-                        <button type="submit" class="btn btn-primary span1 offset5">Add</button>
+                        <button type="submit" class="btn btn-primary span2 pull-right">Add</button>
                 </form>
             </div>
-            <div class="span4">
-                <p class="text-info" ng-show="newMark.labels.length > 0">Label for the new bookmark</p>
+        </div>
+        <div class="row">
+            <div class="span12">
+                <p class="text-info" ng-show="newMark.labels.length > 0">Labels for the new bookmark</p>
                 <span class="label label-info" ng-repeat="label in newMark.labels">{{label}}</span>
             </div>
             <div class="span12 page-separator">
@@ -105,7 +117,7 @@
                             <td ng-model="mark.name">{{mark.name}}</td>
                             <td><a href="{{mark.url}}" target="_blank">{{mark.url}}</a></td>
                             <td>
-                                <button class="btn btn-mini" type="button"><i class="icon-edit"></i></button>
+                                <button class="btn btn-mini" type="button" ng-click="editMark(mark, null)"><i class="icon-edit"></i></button>
                                 <button class="btn btn-mini btn-danger" type="button" ng-click="deleteMark(mark)"><i class="icon-remove"></i></button>
                             </td>
                             <td class="labels">

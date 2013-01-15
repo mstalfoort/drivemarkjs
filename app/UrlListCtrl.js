@@ -11,18 +11,24 @@ function UrlListCtrl($scope, $rootScope, $timeout, googleDrive) {
     $scope.marks = []
 
     $scope.$on("GoogleDriveLoaded", function () {
-    googleDrive.loadBookmarks(
-        function (list) {
-            $scope.marks = list;
-        });
+        googleDrive.loadBookmarks(
+            function (list) {
+                $scope.marks = list;
+                $rootScope.loaderOff();
+            });
     });
 
     $scope.hideAlerts = function() {
         $scope.successMessage = null;
     };
 
-    $scope.deleteMark = function (mark) {
+    $scope.editMark = function (oldMark, newMark) {
+        $scope.loaderOn();
+        $timeout(function () { $scope.loaderOff(); }, 2000);
+    };
 
+    $scope.deleteMark = function (mark) {
+        $scope.loaderOn();
         var newMarks = $.grep($scope.marks, function (elem, index) {
             return elem.url != mark.url;
         });
@@ -38,6 +44,7 @@ function UrlListCtrl($scope, $rootScope, $timeout, googleDrive) {
                     "label": "Cool!",
                     "text": "It worked!"
                 };
+                $scope.loaderOff();
                 $scope.$digest();
                 $timeout($scope.hideAlerts, 3000, true);
             },
@@ -56,6 +63,7 @@ function UrlListCtrl($scope, $rootScope, $timeout, googleDrive) {
             return;
         }
 
+        $scope.loaderOn();
         if (!mark.name || mark.name == "") {
             var parts = mark.url.split("/")[2].split(".");
 
@@ -87,20 +95,21 @@ function UrlListCtrl($scope, $rootScope, $timeout, googleDrive) {
             marksCopy,
             $rootScope.rootFolder.id,
             $rootScope.bookmarkFile.id,
-            /*successCallback:*/ function () {
-                $scope.marks.push(mark);
-                $scope.newMark = resetMarker();
+        /*successCallback:*/function () {
+            $scope.marks.push(mark);
+            $scope.newMark = resetMarker();
 
-                $scope.successMessage = {
-                    "label": "Cool!",
-                    "text": "It worked!"
-                };
-                $scope.$digest();
-                $timeout($scope.hideAlerts, 3000, true);
-            },
-            /*errorCallback:*/ function () {
-                alert("Error saving link to drive");
-            });
+            $scope.successMessage = {
+                "label": "Cool!",
+                "text": "It worked!"
+            };
+            $scope.loaderOff();
+            $scope.$digest();
+            $timeout($scope.hideAlerts, 3000, true);
+        },
+        /*errorCallback:*/function () {
+            alert("Error saving link to drive");
+        });
     }
 
 

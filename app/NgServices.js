@@ -29,7 +29,7 @@ app.factory("googleDrive", function ($rootScope, $http) {
     googleDrive.load = function (scope) {
         // load library, on callback => checkAuth, on callback => call callback!
         this.data = scope;
-
+        $rootScope.loaderOn();
         this.checkAuth();
     };
 
@@ -103,7 +103,6 @@ app.factory("googleDrive", function ($rootScope, $http) {
                     { 'client_id': self.CLIENT_ID, 'scope': self.SCOPES, 'immediate': false },
                     function (authResult) { self.handleAuthResult(authResult); });
     };
-
 
 
     googleDrive.getFile = function (folder, fileName, callbackWithMeta, errorCallback) {
@@ -208,4 +207,26 @@ app.factory("googleDrive", function ($rootScope, $http) {
     };
 
     return googleDrive;
+});
+
+
+app.directive("dgLoader", function ($rootScope) {
+
+    return function (scope, element, attrs) {
+
+        $rootScope.loaderOn = function () {
+            $rootScope.$broadcast("LoaderOn");
+        };
+
+        $rootScope.loaderOff = function () {
+            $rootScope.$broadcast("LoaderOff");
+        };
+
+        scope.$on("LoaderOn", function () {
+            element.fadeIn('fast');
+        });
+        scope.$on("LoaderOff", function () {
+            element.fadeOut('fast');
+        });
+    };
 });
